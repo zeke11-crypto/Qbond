@@ -1,0 +1,13 @@
+{
+  "name": "qbond-agent-demo",
+  "version": "1.0.0",
+  "description": "Autonomous Client Agent <-> Worker Agent end-to-end milestone escrow demo on QDay Aevum (44005).",
+  "type": "module",
+  "scripts": {
+    "demo": "node run-agent-flow.mjs"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "viem": "^2.21.0"
+  }
+}

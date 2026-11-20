@@ -1,0 +1,1701 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>QBond — Agent-to-Agent tUSD8 Milestone Escrow on QDay Aevum</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g1' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0%25' stop-color='%231D4ED8'/%3E%3Cstop offset='100%25' stop-color='%230F172A'/%3E%3C/linearGradient%3E%3ClinearGradient id='g2' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0%25' stop-color='%23FACC15'/%3E%3Cstop offset='100%25' stop-color='%23EAB308'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpolygon points='32,3 58,18 58,46 32,61 6,46 6,18' fill='url(%23g1)' stroke='url(%23g2)' stroke-width='3.5'/%3E%3Cpolygon points='32,16 45,32 32,48 19,32' fill='%2310B981' stroke='%23FFFFFF' stroke-width='2'/%3E%3Cpath d='M37 37 L50 50' stroke='%23FACC15' stroke-width='5' stroke-linecap='round'/%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&family=Space+Grotesk:wght@700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.4/dist/ethers.umd.min.js"></script>
+  <style>
+    :root {
+      --bg-page: #F4F7FC;
+      --bg-card: #FFFFFF;
+      --ink-900: #0B1221;
+      --ink-700: #1E293B;
+      --ink-500: #475569;
+      --cobalt-700: #1D4ED8;
+      --cobalt-800: #1E3A8A;
+      --cobalt-100: #DBEAFE;
+      --gold-500: #EAB308;
+      --gold-400: #FACC15;
+      --gold-100: #FEF9C3;
+      --emerald-600: #059669;
+      --emerald-500: #10B981;
+      --emerald-100: #D1FAE5;
+      --danger-600: #DC2626;
+      --danger-100: #FEE2E2;
+      --border: #CBD5E1;
+      --shadow: 0 10px 25px -8px rgba(15, 23, 42, 0.12);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+      font-weight: 700;
+      background:
+        radial-gradient(circle at 12% 0%, rgba(29, 78, 216, 0.12), transparent 36%),
+        radial-gradient(circle at 90% 8%, rgba(250, 204, 21, 0.18), transparent 34%),
+        var(--bg-page);
+      color: var(--ink-900);
+      min-height: 100vh;
+      line-height: 1.45;
+    }
+
+    h1, h2, h3, .brand-title {
+      font-family: "Space Grotesk", "Plus Jakarta Sans", sans-serif;
+      font-weight: 700;
+      letter-spacing: -0.025em;
+    }
+
+    .mono {
+      font-family: "JetBrains Mono", monospace;
+      font-variant-numeric: tabular-nums;
+      font-weight: 700;
+    }
+
+    .container {
+      max-width: 1220px;
+      margin: 0 auto;
+      padding: 18px 18px 64px;
+    }
+
+    /* Top Navigation */
+    .topbar {
+      background: var(--ink-900);
+      color: #FFFFFF;
+      border-radius: 18px;
+      padding: 14px 20px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      box-shadow: 0 14px 30px -12px rgba(11, 18, 33, 0.45);
+      border: 2px solid var(--cobalt-700);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-title {
+      font-size: 1.45rem;
+      color: #FFFFFF;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .brand-sub {
+      font-size: 0.76rem;
+      color: #CBD5E1;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 11px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .badge-gold { background: var(--gold-400); color: var(--ink-900); }
+    .badge-cobalt { background: var(--cobalt-700); color: #FFFFFF; }
+    .badge-emerald { background: var(--emerald-500); color: #FFFFFF; }
+    .badge-danger { background: var(--danger-600); color: #FFFFFF; }
+    .badge-muted { background: #E2E8F0; color: var(--ink-700); }
+
+    .top-actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .mode-switch {
+      display: inline-flex;
+      background: #1E293B;
+      border: 2px solid #334155;
+      border-radius: 12px;
+      padding: 3px;
+    }
+
+    .mode-btn {
+      border: none;
+      background: transparent;
+      color: #CBD5E1;
+      font-family: inherit;
+      font-weight: 800;
+      font-size: 0.78rem;
+      padding: 7px 12px;
+      border-radius: 9px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .mode-btn.active {
+      background: var(--gold-400);
+      color: var(--ink-900);
+    }
+
+    /* Buttons */
+    .btn {
+      border: 2px solid transparent;
+      border-radius: 12px;
+      padding: 10px 16px;
+      font-family: inherit;
+      font-weight: 800;
+      font-size: 0.88rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      transition: transform 0.12s ease, background 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .btn:hover:not(:disabled) { transform: translateY(-1px); }
+    .btn:disabled { opacity: 0.55; cursor: not-allowed; }
+    .btn-primary { background: var(--cobalt-700); color: #FFFFFF; }
+    .btn-primary:hover:not(:disabled) { background: var(--cobalt-800); }
+    .btn-gold { background: var(--gold-400); color: var(--ink-900); border-color: #CA8A04; }
+    .btn-gold:hover:not(:disabled) { background: var(--gold-500); }
+    .btn-emerald { background: var(--emerald-600); color: #FFFFFF; }
+    .btn-emerald:hover:not(:disabled) { background: #047857; }
+    .btn-danger { background: var(--danger-600); color: #FFFFFF; }
+    .btn-danger:hover:not(:disabled) { background: #B91C1C; }
+    .btn-outline { background: #FFFFFF; color: var(--ink-900); border-color: var(--ink-900); }
+    .btn-outline:hover:not(:disabled) { background: #E2E8F0; }
+    .btn-sm { padding: 7px 12px; font-size: 0.78rem; border-radius: 10px; }
+
+    /* Wallet Balance Strip */
+    .wallet-strip {
+      margin-top: 16px;
+      background: #FFFFFF;
+      border: 2.5px solid var(--ink-900);
+      border-radius: 18px;
+      padding: 16px 20px;
+      box-shadow: var(--shadow);
+      display: grid;
+      grid-template-columns: 1.4fr 1fr 1fr auto;
+      gap: 16px;
+      align-items: center;
+    }
+
+    @media (max-width: 960px) {
+      .wallet-strip { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 600px) {
+      .wallet-strip { grid-template-columns: 1fr; }
+    }
+
+    .balance-box {
+      background: #F8FAFC;
+      border: 2px solid var(--border);
+      border-radius: 14px;
+      padding: 12px 14px;
+      transition: background 0.4s ease, border-color 0.4s ease;
+    }
+
+    .balance-box.funded-pulse {
+      background: var(--emerald-100);
+      border-color: var(--emerald-600);
+      animation: pulseGlow 1.4s ease;
+    }
+
+    @keyframes pulseGlow {
+      0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.55); }
+      70% { box-shadow: 0 0 0 14px rgba(16, 185, 129, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+    }
+
+    .label-xs {
+      font-size: 0.72rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--ink-500);
+      margin-bottom: 4px;
+    }
+
+    .balance-val {
+      font-size: 1.38rem;
+      font-weight: 800;
+      color: var(--ink-900);
+    }
+
+    .wallet-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .status-dot {
+      display: inline-block;
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: #94A3B8;
+      margin-right: 6px;
+    }
+    .status-dot.online { background: var(--emerald-500); box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.25); }
+    .status-dot.warn { background: var(--gold-500); }
+
+    /* Tabs */
+    .tabs {
+      margin-top: 20px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .tab-btn {
+      background: #FFFFFF;
+      color: var(--ink-700);
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      padding: 11px 16px;
+      font-family: inherit;
+      font-weight: 800;
+      font-size: 0.88rem;
+      cursor: pointer;
+    }
+
+    .tab-btn.active {
+      background: var(--cobalt-700);
+      color: #FFFFFF;
+      border-color: var(--ink-900);
+      box-shadow: 0 6px 14px -6px rgba(29, 78, 216, 0.6);
+    }
+
+    /* Cards & Layout */
+    .panel { display: none; margin-top: 18px; }
+    .panel.active { display: block; }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    @media (max-width: 860px) {
+      .grid-2 { grid-template-columns: 1fr; }
+    }
+
+    .card {
+      background: var(--bg-card);
+      border: 2px solid var(--ink-900);
+      border-radius: 18px;
+      padding: 20px;
+      box-shadow: var(--shadow);
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 14px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #E2E8F0;
+    }
+
+    .card-title { font-size: 1.12rem; color: var(--ink-900); }
+
+    .field { margin-bottom: 13px; }
+    .field label {
+      display: block;
+      font-size: 0.78rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--ink-700);
+      margin-bottom: 5px;
+    }
+
+    .field input, .field textarea, .field select {
+      width: 100%;
+      padding: 11px 13px;
+      border: 2px solid var(--border);
+      border-radius: 11px;
+      font-family: inherit;
+      font-weight: 700;
+      font-size: 0.9rem;
+      color: var(--ink-900);
+      background: #F8FAFC;
+    }
+
+    .field input:focus, .field textarea:focus {
+      outline: none;
+      border-color: var(--cobalt-700);
+      background: #FFFFFF;
+    }
+
+    .hash-preview {
+      background: #0F172A;
+      color: #FACC15;
+      padding: 9px 12px;
+      border-radius: 10px;
+      font-size: 0.76rem;
+      word-break: break-all;
+      margin-top: 6px;
+    }
+
+    .row-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    /* Bond & Log Lists */
+    .list-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .bond-item {
+      border: 2px solid var(--border);
+      border-radius: 14px;
+      padding: 14px;
+      background: #F8FAFC;
+    }
+
+    .bond-top {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .bond-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 6px 12px;
+      font-size: 0.82rem;
+      color: var(--ink-700);
+    }
+
+    .cap-bar-track {
+      height: 12px;
+      background: #E2E8F0;
+      border-radius: 999px;
+      overflow: hidden;
+      border: 1.5px solid var(--ink-900);
+      margin: 8px 0;
+    }
+
+    .cap-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--cobalt-700), var(--emerald-500));
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+
+    .audit-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.84rem;
+    }
+
+    .audit-table th, .audit-table td {
+      text-align: left;
+      padding: 10px 12px;
+      border-bottom: 1.5px solid #E2E8F0;
+    }
+
+    .audit-table th {
+      background: #F1F5F9;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .link-tx {
+      color: var(--cobalt-700);
+      text-decoration: none;
+      font-weight: 800;
+    }
+    .link-tx:hover { text-decoration: underline; }
+
+    /* Modals & Toasts */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(11, 18, 33, 0.72);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      z-index: 100;
+    }
+    .modal-backdrop.open { display: flex; }
+
+    .modal {
+      background: #FFFFFF;
+      border: 3px solid var(--ink-900);
+      border-radius: 20px;
+      max-width: 540px;
+      width: 100%;
+      padding: 22px;
+      box-shadow: 0 24px 48px -12px rgba(0, 0, 0, 0.45);
+    }
+
+    .toast-stack {
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      z-index: 200;
+      max-width: 390px;
+    }
+
+    .toast {
+      background: var(--ink-900);
+      color: #FFFFFF;
+      border-left: 6px solid var(--gold-400);
+      padding: 12px 15px;
+      border-radius: 12px;
+      font-size: 0.85rem;
+      font-weight: 800;
+      box-shadow: 0 12px 24px rgba(0,0,0,0.28);
+    }
+    .toast.success { border-left-color: var(--emerald-500); }
+    .toast.error { border-left-color: var(--danger-600); }
+
+    .alert-box {
+      padding: 12px 14px;
+      border-radius: 12px;
+      font-size: 0.84rem;
+      margin-top: 10px;
+      border: 2px solid;
+    }
+    .alert-info { background: var(--cobalt-100); border-color: var(--cobalt-700); color: var(--cobalt-800); }
+    .alert-warn { background: var(--gold-100); border-color: #CA8A04; color: #854D0E; }
+    .alert-danger { background: var(--danger-100); border-color: var(--danger-600); color: #991B1B; }
+    .alert-success { background: var(--emerald-100); border-color: var(--emerald-600); color: #065F46; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Top Header -->
+    <header class="topbar">
+      <div class="brand">
+        <!-- Interlocking Post-Quantum Hexagonal QBond Emblem -->
+        <svg width="46" height="46" viewBox="0 0 64 64" aria-label="QBond Emblem">
+          <defs>
+            <linearGradient id="qbHex" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#2563EB"/>
+              <stop offset="100%" stop-color="#0F172A"/>
+            </linearGradient>
+            <linearGradient id="qbGold" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#FDE047"/>
+              <stop offset="100%" stop-color="#EAB308"/>
+            </linearGradient>
+          </defs>
+          <polygon points="32,3 58,18 58,46 32,61 6,46 6,18" fill="url(#qbHex)" stroke="url(#qbGold)" stroke-width="3.5"/>
+          <circle cx="32" cy="32" r="16" fill="none" stroke="#60A5FA" stroke-width="2" stroke-dasharray="6 4"/>
+          <polygon points="32,16 45,32 32,48 19,32" fill="#10B981" stroke="#FFFFFF" stroke-width="2.2"/>
+          <path d="M38 38 L52 52" stroke="url(#qbGold)" stroke-width="5.5" stroke-linecap="round"/>
+          <circle cx="32" cy="32" r="4" fill="#FFFFFF"/>
+        </svg>
+        <div>
+          <div class="brand-title">
+            QBond
+            <span class="badge badge-gold">Aevum 44005</span>
+          </div>
+          <div class="brand-sub">ERC-8004 Agent Milestone Escrow • tUSD8 Rail</div>
+        </div>
+      </div>
+
+      <div class="top-actions">
+        <div class="mode-switch" role="group" aria-label="Execution mode">
+          <button id="btnModeLive" class="mode-btn active" onclick="setMode('live')">Live On-Chain</button>
+          <button id="btnModeSandbox" class="mode-btn" onclick="setMode('sandbox')">Demo Sandbox</button>
+        </div>
+        <button class="btn btn-gold btn-sm" onclick="openModal('faucetModal')">Claim Faucet</button>
+        <button class="btn btn-outline btn-sm" onclick="openModal('configModal')">Contracts</button>
+        <button id="btnConnect" class="btn btn-emerald btn-sm" onclick="openWalletModal()">Connect Wallet</button>
+      </div>
+    </header>
+
+    <!-- Zero-State WALLET BALANCE Strip -->
+    <section class="wallet-strip" aria-label="Wallet Balance">
+      <div class="wallet-meta">
+        <div class="label-xs">WALLET BALANCE & NETWORK STATUS</div>
+        <div id="walletStatusLine">
+          <span id="statusDot" class="status-dot"></span>
+          <span id="walletAddrLabel" class="mono">Not Connected</span>
+        </div>
+        <div style="display:flex; flex-wrap:wrap; gap:8px; align-items:center;">
+          <span id="chainBadge" class="badge badge-muted">Chain: Disconnected</span>
+          <span id="pollBadge" class="badge badge-cobalt">Auto-Sync: 5s</span>
+          <button id="btnSwitchChain" class="btn btn-gold btn-sm" style="display:none;" onclick="switchToAevum()">Switch to Aevum 44005</button>
+        </div>
+      </div>
+
+      <div id="boxTQDAY" class="balance-box">
+        <div class="label-xs">tQDAY (GAS)</div>
+        <div id="balTQDAY" class="balance-val mono">0.0000</div>
+      </div>
+
+      <div id="boxTUSD8" class="balance-box">
+        <div class="label-xs">tUSD8 (STABLECOIN • 6 DEC)</div>
+        <div id="balTUSD8" class="balance-val mono">0.00</div>
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        <button class="btn btn-primary btn-sm" onclick="syncBalances(true)">Sync Now</button>
+        <button id="btnSandboxClaim" class="btn btn-gold btn-sm" style="display:none;" onclick="claimSandboxFaucet()">Claim Sandbox Faucet Now</button>
+      </div>
+    </section>
+
+    <!-- Navigation Tabs -->
+    <nav class="tabs" role="tablist">
+      <button class="tab-btn active" onclick="switchTab('escrow', this)">1. Milestone Escrow</button>
+      <button class="tab-btn" onclick="switchTab('sessions', this)">2. Scoped Sessions & Kill Switch</button>
+      <button class="tab-btn" onclick="switchTab('agents', this)">3. ERC-8004 Agent Registry</button>
+      <button class="tab-btn" onclick="switchTab('security', this)">4. Prompt-Injection Guardrails</button>
+      <button class="tab-btn" onclick="switchTab('audit', this)">5. On-Chain Audit Trail</button>
+    </nav>
+
+    <!-- TAB 1: Milestone Escrow -->
+    <section id="tab-escrow" class="panel active">
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Create & Fund Milestone Bond</h2>
+            <span class="badge badge-cobalt">tUSD8 Escrow</span>
+          </div>
+
+          <div class="field">
+            <label for="bondWorkerId">Worker ERC-8004 Agent ID</label>
+            <input id="bondWorkerId" type="number" min="1" value="1" />
+          </div>
+          <div class="field">
+            <label for="bondAmount">Amount (tUSD8)</label>
+            <input id="bondAmount" type="number" min="0.01" step="0.01" value="10.00" />
+          </div>
+          <div class="field">
+            <label for="bondDeadlineMin">Deadline (Minutes from now)</label>
+            <input id="bondDeadlineMin" type="number" min="1" value="60" />
+          </div>
+          <div class="field">
+            <label for="bondVerifier">Optional Neutral Verifier Address (leave blank for Client-Verified)</label>
+            <input id="bondVerifier" type="text" placeholder="0x0000000000000000000000000000000000000000" />
+          </div>
+          <div class="field">
+            <label for="bondTaskSpec">Task Specification / SLA (Live Keccak256 Hash)</label>
+            <textarea id="bondTaskSpec" rows="2" oninput="updateTaskHashPreview()">Verify QDay Aevum post-quantum RPC telemetry and submit signed JSON benchmark.</textarea>
+            <div id="taskHashPreview" class="hash-preview mono"></div>
+          </div>
+
+          <div class="row-actions">
+            <button class="btn btn-gold" onclick="approveTUSD8()">1. Approve tUSD8</button>
+            <button class="btn btn-primary" onclick="createBond(false)">2. Lock Direct Bond</button>
+            <button class="btn btn-emerald" onclick="createBond(true)">Lock via Session Key</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Active & Historical Bonds</h2>
+            <button class="btn btn-outline btn-sm" onclick="refreshBonds()">Refresh Bonds</button>
+          </div>
+          <div id="bondsContainer" class="list-stack">
+            <div class="alert-box alert-info">No bonds loaded yet. Create a milestone bond or configure your deployed QBondEscrow contract address.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 2: Scoped Sessions -->
+    <section id="tab-sessions" class="panel">
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Configure Scoped Agent Session Key</h2>
+            <span class="badge badge-emerald">Least-Privilege</span>
+          </div>
+
+          <div class="field">
+            <label for="sessKeyAddr">Autonomous Agent Session Key Address</label>
+            <input id="sessKeyAddr" type="text" placeholder="0x..." />
+          </div>
+          <div class="field">
+            <label for="sessMaxBond">Max Per Bond (tUSD8)</label>
+            <input id="sessMaxBond" type="number" min="0.01" step="0.01" value="25.00" />
+          </div>
+          <div class="field">
+            <label for="sessDailyCap">Rolling 24h Daily Cap (tUSD8)</label>
+            <input id="sessDailyCap" type="number" min="0.01" step="0.01" value="100.00" />
+          </div>
+          <div class="field">
+            <label for="sessExpiryHrs">Session Expiry (Hours)</label>
+            <input id="sessExpiryHrs" type="number" min="1" value="24" />
+          </div>
+
+          <div class="row-actions">
+            <button class="btn btn-primary" onclick="saveSessionPolicy()">Authorize Session Policy</button>
+            <button class="btn btn-danger" onclick="revokeSessionPolicy()">1-Click Emergency Revoke</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Live Policy Telemetry</h2>
+            <button class="btn btn-outline btn-sm" onclick="inspectSessionPolicy()">Inspect Policy</button>
+          </div>
+          <div id="sessionTelemetry">
+            <div class="alert-box alert-info">Authorize or inspect a session key to view its rolling 24h cap, expiration timestamp, and kill-switch status.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 3: ERC-8004 Agent Registry -->
+    <section id="tab-agents" class="panel">
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Register ERC-8004 Worker Agent</h2>
+            <span class="badge badge-gold">ERC-8004 NFT</span>
+          </div>
+          <div class="field">
+            <label for="agentUriInput">Agent Metadata URI (IPFS / HTTPS Agent Card)</label>
+            <input id="agentUriInput" type="text" value="ipfs://qbond-worker-agent-card-v1.json" />
+          </div>
+          <button class="btn btn-emerald" onclick="registerAgent()">Mint Agent Identity NFT</button>
+          <div id="registerAgentResult" style="margin-top:12px;"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Resolve On-Chain Agent Identity</h2>
+            <span class="badge badge-cobalt">ownerOf + tokenURI</span>
+          </div>
+          <div class="field">
+            <label for="lookupAgentId">Agent ID</label>
+            <input id="lookupAgentId" type="number" min="1" value="1" />
+          </div>
+          <button class="btn btn-primary" onclick="lookupAgent()">Resolve Agent</button>
+          <div id="agentLookupResult" style="margin-top:12px;"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 4: Guardrail & Prompt-Injection Stress Test -->
+    <section id="tab-security" class="panel">
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">Guardrail & Prompt-Injection Stress Test</h2>
+          <span class="badge badge-danger">Zero-Trust Enforcement</span>
+        </div>
+        <p style="font-size:0.9rem; color:var(--ink-700); margin-bottom:14px;">
+          Simulate a compromised or prompt-injected autonomous agent attempting to violate your on-chain policy caps. Every attack is rejected at the Solidity layer with explicit machine-readable custom errors.
+        </p>
+        <div class="row-actions">
+          <button class="btn btn-danger" onclick="runAttackSim('perBond')">Attack 1: Overspend Per-Bond Cap (500 tUSD8)</button>
+          <button class="btn btn-danger" onclick="runAttackSim('dailyCap')">Attack 2: Exhaust Rolling 24h Cap</button>
+          <button class="btn btn-danger" onclick="runAttackSim('revoked')">Attack 3: Call After 1-Click Revoke</button>
+        </div>
+        <div id="securitySimOutput" style="margin-top:14px;"></div>
+      </div>
+    </section>
+
+    <!-- TAB 5: Audit Trail -->
+    <section id="tab-audit" class="panel">
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">Verifiable On-Chain Audit Trail</h2>
+          <a class="btn btn-outline btn-sm" href="https://explorer-test.qday.info" target="_blank" rel="noopener">Open Aevum Explorer</a>
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="audit-table">
+            <thead>
+              <tr>
+                <th>Time</th>
+                <th>Action</th>
+                <th>Mode</th>
+                <th>Details</th>
+                <th>Proof / Explorer</th>
+              </tr>
+            </thead>
+            <tbody id="auditBody">
+              <tr><td colspan="5" style="color:var(--ink-500);">No transactions recorded in this session yet.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Wallet Picker Modal (EIP-6963) -->
+  <div id="walletModal" class="modal-backdrop" onclick="if(event.target===this) closeModal('walletModal')">
+    <div class="modal">
+      <div class="card-header">
+        <h3 class="card-title">Connect Wallet to QDay Aevum (44005)</h3>
+        <button class="btn btn-outline btn-sm" onclick="closeModal('walletModal')">Close</button>
+      </div>
+      <div id="walletList" class="list-stack"></div>
+    </div>
+  </div>
+
+  <!-- Faucet Action Modal -->
+  <div id="faucetModal" class="modal-backdrop" onclick="if(event.target===this) closeModal('faucetModal')">
+    <div class="modal">
+      <div class="card-header">
+        <h3 class="card-title">Claim QDay Aevum Testnet Funds</h3>
+        <button class="btn btn-outline btn-sm" onclick="closeModal('faucetModal')">Close</button>
+      </div>
+      <p style="font-size:0.88rem; color:var(--ink-700); margin-bottom:12px;">
+        Balances start strictly empty until you claim <strong>tQDAY</strong> (gas) and <strong>tUSD8</strong> (6-decimal stablecoin). QBond polls live every 5 seconds and highlights green as soon as funds arrive.
+      </p>
+      <div class="field">
+        <label>Your Connected Wallet Address</label>
+        <input id="faucetWalletDisplay" class="mono" type="text" readonly value="Connect wallet first" />
+      </div>
+      <div class="row-actions">
+        <button class="btn btn-outline btn-sm" onclick="copyConnectedAddress()">Copy Wallet Address</button>
+        <button class="btn btn-gold btn-sm" onclick="copyDiscordFaucet()">Copy /faucet &lt;address&gt;</button>
+        <button class="btn btn-primary btn-sm" onclick="switchToAevum()">Add / Switch Aevum 44005</button>
+      </div>
+      <div class="row-actions" style="margin-top:14px;">
+        <a class="btn btn-emerald" style="width:100%; text-decoration:none;" href="https://faucet.qday.info" target="_blank" rel="noopener">Open Official faucet.qday.info</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contract Configuration Modal -->
+  <div id="configModal" class="modal-backdrop" onclick="if(event.target===this) closeModal('configModal')">
+    <div class="modal">
+      <div class="card-header">
+        <h3 class="card-title">Aevum 44005 Contract Addresses</h3>
+        <button class="btn btn-outline btn-sm" onclick="closeModal('configModal')">Close</button>
+      </div>
+      <div class="field">
+        <label>Pinned tUSD8 Token Address (6 Decimals)</label>
+        <input id="cfgTusd8" class="mono" type="text" />
+      </div>
+      <div class="field">
+        <label>Deployed QBondEscrow Address</label>
+        <input id="cfgEscrow" class="mono" type="text" placeholder="0x... (paste after forge script deploy)" />
+      </div>
+      <div class="field">
+        <label>ERC-8004 IdentityRegistry Address</label>
+        <input id="cfgRegistry" class="mono" type="text" placeholder="0x... (paste after forge script deploy)" />
+      </div>
+      <div class="row-actions">
+        <button class="btn btn-primary" onclick="saveContractConfig()">Save Configuration</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toastStack" class="toast-stack"></div>
+
+  <script>
+    // =========================================================================
+    // 1. QDay Aevum Testnet Constants & Default Deployment Config
+    //    After running `forge script script/DeployQBond.s.sol:DeployQBond`,
+    //    paste your live deployed addresses into DEFAULT_CONFIG below!
+    // =========================================================================
+    const AEVUM = {
+      chainIdDec: 44005,
+      chainIdHex: "0xABE5",
+      chainName: "QDay Aevum Testnet",
+      rpcUrl: "https://rpc-test.qday.info",
+      explorerUrl: "https://explorer-test.qday.info",
+      nativeCurrency: { name: "Test QDAY", symbol: "tQDAY", decimals: 18 }
+    };
+
+    const DEFAULT_CONFIG = {
+      tusd8: "0x456569838f1d43009A91ebA4263147Afd7233483",
+      escrow: "",     // <-- PASTE DEPLOYED QBondEscrow 0x... ADDRESS HERE
+      registry: ""    // <-- PASTE DEPLOYED QBondIdentityRegistry (or ERC-8004) 0x... ADDRESS HERE
+    };
+
+    const ERC20_ABI = [
+      "function balanceOf(address owner) view returns (uint256)",
+      "function allowance(address owner, address spender) view returns (uint256)",
+      "function approve(address spender, uint256 amount) returns (bool)"
+    ];
+
+    const REGISTRY_ABI = [
+      "function register(string agentURI) returns (uint256)",
+      "function ownerOf(uint256 agentId) view returns (address)",
+      "function tokenURI(uint256 agentId) view returns (string)",
+      "function nextAgentId() view returns (uint256)"
+    ];
+
+    const ESCROW_ABI = [
+      "function nextBondId() view returns (uint256)",
+      "function remainingDailyCap(address client, address sessionKey) view returns (uint256)",
+      "function setSessionPolicy(address sessionKey, uint256 maxPerBond, uint256 dailyCap, uint64 expiresAt)",
+      "function revokeSession(address sessionKey)",
+      "function createBond(uint256 workerAgentId, address verifier, bytes32 taskHash, uint256 amount, uint64 deadline) returns (uint256)",
+      "function createBondWithSession(address client, uint256 workerAgentId, address verifier, bytes32 taskHash, uint256 amount, uint64 deadline) returns (uint256)",
+      "function submitMilestone(uint256 bondId, bytes32 receiptHash, string receiptURI)",
+      "function approveAndSettle(uint256 bondId)",
+      "function cancelBond(uint256 bondId)",
+      "function claimTimeoutRefund(uint256 bondId)",
+      "function rejectAndRefund(uint256 bondId, string reason)",
+      "function bonds(uint256) view returns (uint256 id, address client, address initiator, uint256 workerAgentId, address workerPayout, address verifier, uint256 amount, bytes32 taskHash, bytes32 receiptHash, string receiptURI, uint64 createdAt, uint64 deadline, uint8 status)",
+      "function policies(address, address) view returns (uint256 maxPerBond, uint256 dailyCap, uint256 dailySpent, uint64 windowStart, uint64 expiresAt, bool active)"
+    ];
+
+    const STATUS_LABELS = ["NONE", "FUNDED", "SUBMITTED", "SETTLED", "REFUNDED", "CANCELLED"];
+
+    // =========================================================================
+    // 2. App State (Strict Zero-State Balances by Default)
+    // =========================================================================
+    let mode = "live"; // Defaults strictly to Live On-Chain (Aevum 44005)
+    let discoveredProviders = [];
+    let activeEip1193 = null;
+    let browserProvider = null;
+    let signer = null;
+    let userAddress = null;
+    let currentChainId = null;
+    let lastLiveTQDAY = 0n;
+    let lastLiveTUSD8 = 0n;
+    let pollTimer = null;
+
+    let config = loadConfig();
+
+    // Sandbox mirrors Solidity logic faithfully, starting strictly at 0.0000 / 0.00
+    const sandbox = {
+      tqday: 0,
+      tusd8: 0,
+      allowance: 0,
+      nowOffsetSec: 0,
+      nextAgentId: 2,
+      agents: {
+        1: { owner: "0xA7e1000000000000000000000000000000008004", uri: "ipfs://qbond-worker-agent-genesis-v1" }
+      },
+      policy: null,
+      nextBondId: 1,
+      bonds: []
+    };
+
+    const auditLog = [];
+
+    // =========================================================================
+    // 3. Utilities, Modals, Toasts & EIP-6963 Discovery
+    // =========================================================================
+    function loadConfig() {
+      try {
+        const saved = JSON.parse(localStorage.getItem("qbond_aevum_config") || "{}");
+        return {
+          tusd8: saved.tusd8 || DEFAULT_CONFIG.tusd8,
+          escrow: saved.escrow || DEFAULT_CONFIG.escrow,
+          registry: saved.registry || DEFAULT_CONFIG.registry
+        };
+      } catch {
+        return { ...DEFAULT_CONFIG };
+      }
+    }
+
+    function saveContractConfig() {
+      config.tusd8 = document.getElementById("cfgTusd8").value.trim() || DEFAULT_CONFIG.tusd8;
+      config.escrow = document.getElementById("cfgEscrow").value.trim();
+      config.registry = document.getElementById("cfgRegistry").value.trim();
+      localStorage.setItem("qbond_aevum_config", JSON.stringify(config));
+      closeModal("configModal");
+      toast("Contract addresses saved for Aevum 44005.", "success");
+      syncBalances(true);
+      refreshBonds();
+    }
+
+    function toast(msg, type = "info") {
+      const stack = document.getElementById("toastStack");
+      const el = document.createElement("div");
+      el.className = `toast ${type}`;
+      el.textContent = msg;
+      stack.appendChild(el);
+      setTimeout(() => el.remove(), 4800);
+    }
+
+    function openModal(id) {
+      if (id === "configModal") {
+        document.getElementById("cfgTusd8").value = config.tusd8;
+        document.getElementById("cfgEscrow").value = config.escrow;
+        document.getElementById("cfgRegistry").value = config.registry;
+      }
+      if (id === "faucetModal") {
+        document.getElementById("faucetWalletDisplay").value = userAddress || "Connect wallet first";
+      }
+      document.getElementById(id).classList.add("open");
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).classList.remove("open");
+    }
+
+    function switchTab(name, btn) {
+      document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
+      document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+      document.getElementById(`tab-${name}`).classList.add("active");
+      btn.classList.add("active");
+    }
+
+    function shortAddr(a) {
+      return a && a.length > 10 ? `${a.slice(0, 6)}...${a.slice(-4)}` : (a || "—");
+    }
+
+    function updateTaskHashPreview() {
+      const text = document.getElementById("bondTaskSpec").value || "";
+      const hash = ethers.keccak256(ethers.toUtf8Bytes(text));
+      document.getElementById("taskHashPreview").textContent = `taskHash: ${hash}`;
+      return hash;
+    }
+
+    function logAudit(action, details, txHash = null) {
+      auditLog.unshift({
+        time: new Date().toLocaleTimeString(),
+        action,
+        mode: mode === "live" ? "Aevum 44005" : "Sandbox",
+        details,
+        txHash
+      });
+      renderAudit();
+    }
+
+    function renderAudit() {
+      const tbody = document.getElementById("auditBody");
+      if (!auditLog.length) return;
+      tbody.innerHTML = auditLog.map(item => `
+        <tr>
+          <td class="mono">${item.time}</td>
+          <td><strong>${item.action}</strong></td>
+          <td><span class="badge ${item.mode === "Aevum 44005" ? "badge-emerald" : "badge-gold"}">${item.mode}</span></td>
+          <td>${item.details}</td>
+          <td class="mono">
+            ${item.txHash && item.txHash.startsWith("0x") && item.mode === "Aevum 44005"
+              ? `<a class="link-tx" href="${AEVUM.explorerUrl}/tx/${item.txHash}" target="_blank" rel="noopener">${shortAddr(item.txHash)} ↗</a>`
+              : (item.txHash || "Local State")}
+          </td>
+        </tr>
+      `).join("");
+    }
+
+    function decodeError(err) {
+      const raw = err?.shortMessage || err?.reason || err?.message || String(err);
+      if (raw.includes("ExceedsPerBondCap")) return "Blocked: ExceedsPerBondCap — agent tried to spend above per-bond limit.";
+      if (raw.includes("ExceedsDailyCap")) return "Blocked: ExceedsDailyCap — rolling 24h spending cap reached.";
+      if (raw.includes("SessionNotActive")) return "Blocked: SessionNotActive — session key was revoked or never authorized.";
+      if (raw.includes("SessionExpired")) return "Blocked: SessionExpired — session TTL expired.";
+      if (raw.includes("DeadlineNotReached")) return "Blocked: DeadlineNotReached — timeout refund unlocks only after deadline.";
+      if (raw.includes("UnauthorizedCaller")) return "Blocked: UnauthorizedCaller — caller lacks permission for this bond.";
+      if (raw.includes("InvalidWorkerAgent")) return "Blocked: InvalidWorkerAgent — ERC-8004 agent ID does not exist.";
+      if (raw.includes("insufficient funds")) return "Insufficient tQDAY gas — claim from faucet.qday.info.";
+      return raw.slice(0, 180);
+    }
+
+    // EIP-6963 Multi-Wallet Discovery
+    window.addEventListener("eip6963:announceProvider", (event) => {
+      const { info, provider } = event.detail;
+      if (!discoveredProviders.some(p => p.info.uuid === info.uuid)) {
+        discoveredProviders.push({ info, provider });
+      }
+    });
+    window.dispatchEvent(new Event("eip6963:requestProvider"));
+
+    function openWalletModal() {
+      const list = document.getElementById("walletList");
+      const items = [...discoveredProviders];
+      if (!items.length && window.ethereum) {
+        items.push({ info: { name: "Injected Browser Wallet (MetaMask / Rainbow)", uuid: "legacy" }, provider: window.ethereum });
+      }
+
+      if (!items.length) {
+        list.innerHTML = `<div class="alert-box alert-warn">No Web3 wallet detected. Install MetaMask or Rainbow Wallet, or switch to <strong>Demo Sandbox</strong> mode above to test locally.</div>`;
+      } else {
+        list.innerHTML = items.map((w, idx) => `
+          <button class="btn btn-outline" style="justify-content:space-between; width:100%;" onclick="connectProvider(${idx})">
+            <span>${w.info.name}</span>
+            <span class="badge badge-cobalt">Connect</span>
+          </button>
+        `).join("");
+      }
+      openModal("walletModal");
+    }
+
+    async function connectProvider(index) {
+      const items = discoveredProviders.length
+        ? discoveredProviders
+        : (window.ethereum ? [{ info: { name: "Injected Wallet" }, provider: window.ethereum }] : []);
+      const chosen = items[index];
+      if (!chosen) return;
+
+      try {
+        activeEip1193 = chosen.provider;
+        await activeEip1193.request({ method: "eth_requestAccounts" });
+        browserProvider = new ethers.BrowserProvider(activeEip1193);
+        signer = await browserProvider.getSigner();
+        userAddress = await signer.getAddress();
+        const net = await browserProvider.getNetwork();
+        currentChainId = Number(net.chainId);
+
+        if (!document.getElementById("sessKeyAddr").value) {
+          document.getElementById("sessKeyAddr").value = userAddress;
+        }
+
+        attachProviderListeners(activeEip1193);
+        closeModal("walletModal");
+        updateWalletUI();
+        await syncBalances(false);
+        await refreshBonds();
+        toast(`Connected ${shortAddr(userAddress)}`, "success");
+      } catch (err) {
+        toast(decodeError(err), "error");
+      }
+    }
+
+    function attachProviderListeners(provider) {
+      if (!provider.on || provider._qbondBound) return;
+      provider._qbondBound = true;
+      provider.on("accountsChanged", async (accounts) => {
+        if (!accounts.length) {
+          userAddress = null;
+          signer = null;
+          setBalanceDisplay("0.0000", "0.00");
+        } else {
+          browserProvider = new ethers.BrowserProvider(provider);
+          signer = await browserProvider.getSigner();
+          userAddress = await signer.getAddress();
+          await syncBalances(false);
+        }
+        updateWalletUI();
+      });
+      provider.on("chainChanged", async (hexChainId) => {
+        currentChainId = parseInt(hexChainId, 16);
+        browserProvider = new ethers.BrowserProvider(provider);
+        signer = userAddress ? await browserProvider.getSigner() : null;
+        updateWalletUI();
+        await syncBalances(false);
+      });
+    }
+
+    async function switchToAevum() {
+      const p = activeEip1193 || window.ethereum;
+      if (!p) return toast("Connect a Web3 wallet first.", "error");
+      try {
+        await p.request({
+          method: "wallet_switchEthereumChain",
+          params: [{ chainId: AEVUM.chainIdHex }]
+        });
+      } catch (err) {
+        if (err.code === 4902) {
+          await p.request({
+            method: "wallet_addEthereumChain",
+            params: [{
+              chainId: AEVUM.chainIdHex,
+              chainName: AEVUM.chainName,
+              nativeCurrency: AEVUM.nativeCurrency,
+              rpcUrls: [AEVUM.rpcUrl],
+              blockExplorerUrls: [AEVUM.explorerUrl]
+            }]
+          });
+        } else {
+          return toast(decodeError(err), "error");
+        }
+      }
+      toast("Switched to QDay Aevum Testnet (44005).", "success");
+      await syncBalances(true);
+    }
+
+    function updateWalletUI() {
+      const dot = document.getElementById("statusDot");
+      const addrEl = document.getElementById("walletAddrLabel");
+      const chainBadge = document.getElementById("chainBadge");
+      const switchBtn = document.getElementById("btnSwitchChain");
+      const connectBtn = document.getElementById("btnConnect");
+
+      if (mode === "sandbox") {
+        dot.className = "status-dot online";
+        addrEl.textContent = userAddress ? `${shortAddr(userAddress)} (Sandbox)` : "0x5aNd...b0x1 (Sandbox Principal)";
+        chainBadge.className = "badge badge-gold";
+        chainBadge.textContent = "Mode: Local Sandbox";
+        switchBtn.style.display = "none";
+        document.getElementById("btnSandboxClaim").style.display = "inline-flex";
+        return;
+      }
+
+      document.getElementById("btnSandboxClaim").style.display = "none";
+
+      if (!userAddress) {
+        dot.className = "status-dot";
+        addrEl.textContent = "Not Connected";
+        chainBadge.className = "badge badge-muted";
+        chainBadge.textContent = "Chain: Disconnected";
+        switchBtn.style.display = "none";
+        connectBtn.textContent = "Connect Wallet";
+        return;
+      }
+
+      connectBtn.textContent = shortAddr(userAddress);
+      addrEl.textContent = userAddress;
+
+      if (currentChainId === AEVUM.chainIdDec) {
+        dot.className = "status-dot online";
+        chainBadge.className = "badge badge-emerald";
+        chainBadge.textContent = "QDay Aevum (44005)";
+        switchBtn.style.display = "none";
+      } else {
+        dot.className = "status-dot warn";
+        chainBadge.className = "badge badge-danger";
+        chainBadge.textContent = `Wrong Chain (${currentChainId})`;
+        switchBtn.style.display = "inline-flex";
+      }
+    }
+
+    function setBalanceDisplay(tqdayStr, tusd8Str) {
+      document.getElementById("balTQDAY").textContent = tqdayStr;
+      document.getElementById("balTUSD8").textContent = tusd8Str;
+    }
+
+    function pulseBalanceBox(id) {
+      const box = document.getElementById(id);
+      box.classList.remove("funded-pulse");
+      void box.offsetWidth;
+      box.classList.add("funded-pulse");
+    }
+
+    // =========================================================================
+    // 4. Real-Time 5s Faucet Reflection & Balance Sync
+    // =========================================================================
+    async function syncBalances(manual = false) {
+      if (mode === "sandbox") {
+        setBalanceDisplay(sandbox.tqday.toFixed(4), sandbox.tusd8.toFixed(2));
+        if (manual) toast("Sandbox balances synced.", "info");
+        return;
+      }
+
+      if (!userAddress) {
+        setBalanceDisplay("0.0000", "0.00");
+        if (manual) toast("Connect a wallet to sync live Aevum balances.", "info");
+        return;
+      }
+
+      try {
+        const rpc = new ethers.JsonRpcProvider(AEVUM.rpcUrl);
+        const token = new ethers.Contract(config.tusd8, ERC20_ABI, rpc);
+        const [tqdayWei, tusd8Raw] = await Promise.all([
+          rpc.getBalance(userAddress),
+          token.balanceOf(userAddress).catch(() => 0n)
+        ]);
+
+        if (tqdayWei > lastLiveTQDAY && lastLiveTQDAY >= 0n) {
+          if (lastLiveTQDAY === 0n && tqdayWei > 0n || tqdayWei > lastLiveTQDAY) {
+            pulseBalanceBox("boxTQDAY");
+            toast(`Faucet landed: +${Number(ethers.formatEther(tqdayWei - lastLiveTQDAY)).toFixed(4)} tQDAY`, "success");
+          }
+        }
+        if (tusd8Raw > lastLiveTUSD8) {
+          pulseBalanceBox("boxTUSD8");
+          toast(`Faucet landed: +${Number(ethers.formatUnits(tusd8Raw - lastLiveTUSD8, 6)).toFixed(2)} tUSD8`, "success");
+        }
+
+        lastLiveTQDAY = tqdayWei;
+        lastLiveTUSD8 = tusd8Raw;
+
+        setBalanceDisplay(
+          Number(ethers.formatEther(tqdayWei)).toFixed(4),
+          Number(ethers.formatUnits(tusd8Raw, 6)).toFixed(2)
+        );
+        if (manual) toast("Live Aevum 44005 balances synced.", "success");
+      } catch (err) {
+        if (manual) toast("RPC sync error: " + decodeError(err), "error");
+      }
+    }
+
+    function claimSandboxFaucet() {
+      sandbox.tqday += 5.0;
+      sandbox.tusd8 += 500.0;
+      pulseBalanceBox("boxTQDAY");
+      pulseBalanceBox("boxTUSD8");
+      setBalanceDisplay(sandbox.tqday.toFixed(4), sandbox.tusd8.toFixed(2));
+      logAudit("Sandbox Faucet", "Credited 5.0000 tQDAY + 500.00 tUSD8");
+      toast("Sandbox faucet credited: 5 tQDAY & 500 tUSD8.", "success");
+    }
+
+    function setMode(nextMode) {
+      mode = nextMode;
+      document.getElementById("btnModeLive").classList.toggle("active", mode === "live");
+      document.getElementById("btnModeSandbox").classList.toggle("active", mode === "sandbox");
+      updateWalletUI();
+      syncBalances(false);
+      refreshBonds();
+      toast(`Switched to ${mode === "live" ? "Live On-Chain (Aevum 44005)" : "Demo Sandbox (Zero-State)"}`, "info");
+    }
+
+    function copyConnectedAddress() {
+      if (!userAddress) return toast("Connect wallet first.", "error");
+      navigator.clipboard.writeText(userAddress);
+      toast("Wallet address copied!", "success");
+    }
+
+    function copyDiscordFaucet() {
+      if (!userAddress) return toast("Connect wallet first.", "error");
+      navigator.clipboard.writeText(`/faucet ${userAddress}`);
+      toast("Copied `/faucet <address>` for Discord #faucet!", "success");
+    }
+
+    // =========================================================================
+    // 5. Contract Helpers (Live On-Chain vs. Solidity-Faithful Sandbox)
+    // =========================================================================
+    function requireLiveContracts() {
+      if (!signer || !userAddress) throw new Error("Connect your wallet first.");
+      if (currentChainId !== AEVUM.chainIdDec) throw new Error("Switch wallet to QDay Aevum (Chain ID 44005).");
+      if (!config.escrow || !ethers.isAddress(config.escrow)) {
+        throw new Error("Open 'Contracts' and paste your deployed QBondEscrow address first.");
+      }
+      return new ethers.Contract(config.escrow, ESCROW_ABI, signer);
+    }
+
+    async function approveTUSD8() {
+      const amountNum = parseFloat(document.getElementById("bondAmount").value || "0");
+      if (amountNum <= 0) return toast("Enter a valid tUSD8 amount.", "error");
+
+      if (mode === "sandbox") {
+        sandbox.allowance = Math.max(sandbox.allowance, amountNum * 5);
+        logAudit("Approve tUSD8", `Approved ${sandbox.allowance.toFixed(2)} tUSD8 for QBondEscrow`);
+        return toast(`Sandbox: Approved ${sandbox.allowance.toFixed(2)} tUSD8.`, "success");
+      }
+
+      try {
+        requireLiveContracts();
+        const token = new ethers.Contract(config.tusd8, ERC20_ABI, signer);
+        const amt = ethers.parseUnits(amountNum.toFixed(6), 6);
+        const tx = await token.approve(config.escrow, amt);
+        toast("Approval submitted on Aevum 44005...", "info");
+        await tx.wait();
+        logAudit("Approve tUSD8", `Approved ${amountNum.toFixed(2)} tUSD8`, tx.hash);
+        toast("tUSD8 approval confirmed!", "success");
+      } catch (err) {
+        toast(decodeError(err), "error");
+      }
+    }
+
+    async function createBond(viaSession) {
+      const workerId = parseInt(document.getElementById("bondWorkerId").value, 10);
+      const amountNum = parseFloat(document.getElementById("bondAmount").value || "0");
+      const deadlineMin = parseInt(document.getElementById("bondDeadlineMin").value, 10);
+      const verifierInput = document.getElementById("bondVerifier").value.trim();
+      const verifier = ethers.isAddress(verifierInput) ? verifierInput : ethers.ZeroAddress;
+      const taskHash = updateTaskHashPreview();
+
+      if (!workerId || amountNum <= 0 || !deadlineMin) return toast("Fill in valid bond parameters.", "error");
+
+      if (mode === "sandbox") {
+        if (!sandbox.agents[workerId]) return toast("Blocked: InvalidWorkerAgent", "error");
+        if (sandbox.tusd8 < amountNum) return toast("Insufficient Sandbox tUSD8 — click Claim Sandbox Faucet Now.", "error");
+        if (viaSession) {
+          const p = sandbox.policy;
+          const now = Math.floor(Date.now() / 1000) + sandbox.nowOffsetSec;
+          if (!p || !p.active) return toast("Blocked: SessionNotActive — authorize a session key first.", "error");
+          if (now > p.expiresAt) return toast("Blocked: SessionExpired", "error");
+          if (amountNum > p.maxPerBond) return toast(`Blocked: ExceedsPerBondCap (${amountNum} > ${p.maxPerBond})`, "error");
+          if (p.dailySpent + amountNum > p.dailyCap) return toast(`Blocked: ExceedsDailyCap (${p.dailySpent + amountNum} > ${p.dailyCap})`, "error");
+          p.dailySpent += amountNum;
+          renderSandboxPolicy();
+        }
+        sandbox.tusd8 -= amountNum;
+        const now = Math.floor(Date.now() / 1000) + sandbox.nowOffsetSec;
+        const bond = {
+          id: sandbox.nextBondId++,
+          workerAgentId: workerId,
+          workerPayout: sandbox.agents[workerId].owner,
+          verifier,
+          amount: amountNum,
+          taskHash,
+          receiptHash: ethers.ZeroHash,
+          receiptURI: "",
+          deadline: now + deadlineMin * 60,
+          status: 1,
+          viaSession
+        };
+        sandbox.bonds.unshift(bond);
+        syncBalances(false);
+        renderBonds(sandbox.bonds);
+        logAudit(viaSession ? "Create Bond (Session)" : "Create Bond", `Bond #${bond.id} locked ${amountNum.toFixed(2)} tUSD8 for Agent #${workerId}`);
+        return toast(`Sandbox Bond #${bond.id} funded!`, "success");
+      }
+
+      try {
+        const escrow = requireLiveContracts();
+        const amt = ethers.parseUnits(amountNum.toFixed(6), 6);
+        const deadline = BigInt(Math.floor(Date.now() / 1000) + deadlineMin * 60);
+        const tx = viaSession
+          ? await escrow.createBondWithSession(userAddress, workerId, verifier, taskHash, amt, deadline)
+          : await escrow.createBond(workerId, verifier, taskHash, amt, deadline);
+        toast("Submitting milestone bond to Aevum 44005...", "info");
+        await tx.wait();
+        logAudit(viaSession ? "Create Bond (Session)" : "Create Bond", `Locked ${amountNum.toFixed(2)} tUSD8 for Agent #${workerId}`, tx.hash);
+        toast("Bond funded on-chain!", "success");
+        await syncBalances(false);
+        await refreshBonds();
+      } catch (err) {
+        toast(decodeError(err), "error");
+      }
+    }
+
+    async function refreshBonds() {
+      if (mode === "sandbox") {
+        renderBonds(sandbox.bonds);
+        return;
+      }
+      if (!config.escrow || !ethers.isAddress(config.escrow)) return;
+      try {
+        const rpc = new ethers.JsonRpcProvider(AEVUM.rpcUrl);
+        const escrow = new ethers.Contract(config.escrow, ESCROW_ABI, rpc);
+        const nextId = Number(await escrow.nextBondId());
+        const items = [];
+        for (let id = nextId - 1; id >= Math.max(1, nextId - 12); id--) {
+          const b = await escrow.bonds(id);
+          items.push({
+            id: Number(b.id),
+            workerAgentId: Number(b.workerAgentId),
+            workerPayout: b.workerPayout,
+            verifier: b.verifier,
+            amount: Number(ethers.formatUnits(b.amount, 6)),
+            taskHash: b.taskHash,
+            receiptHash: b.receiptHash,
+            receiptURI: b.receiptURI,
+            deadline: Number(b.deadline),
+            status: Number(b.status)
+          });
+        }
+        renderBonds(items);
+      } catch (err) {
+        toast("Could not load bonds: " + decodeError(err), "error");
+      }
+    }
+
+    function renderBonds(list) {
+      const container = document.getElementById("bondsContainer");
+      if (!list.length) {
+        container.innerHTML = `<div class="alert-box alert-info">No bonds created yet. Fund a milestone bond on the left to test the full settlement lifecycle.</div>`;
+        return;
+      }
+      const now = Math.floor(Date.now() / 1000) + (mode === "sandbox" ? sandbox.nowOffsetSec : 0);
+      container.innerHTML = list.map(b => {
+        const statusName = STATUS_LABELS[b.status] || "UNKNOWN";
+        const badgeCls = statusName === "SETTLED" ? "badge-emerald"
+          : statusName === "FUNDED" ? "badge-cobalt"
+          : statusName === "SUBMITTED" ? "badge-gold"
+          : "badge-danger";
+        const expired = now > b.deadline;
+        return `
+          <div class="bond-item">
+            <div class="bond-top">
+              <strong>Bond #${b.id} • <span class="mono">${b.amount.toFixed(2)} tUSD8</span></strong>
+              <span class="badge ${badgeCls}">${statusName}${expired && b.status === 1 ? " (EXPIRED)" : ""}</span>
+            </div>
+            <div class="bond-grid">
+              <div>Worker Agent: <span class="mono">#${b.workerAgentId}</span></div>
+              <div>Payout: <span class="mono">${shortAddr(b.workerPayout)}</span></div>
+              <div>Task Hash: <span class="mono">${shortAddr(b.taskHash)}</span></div>
+              <div>Deadline: <span class="mono">${new Date(b.deadline * 1000).toLocaleTimeString()}</span></div>
+            </div>
+            <div class="row-actions">
+              ${b.status === 1 ? `<button class="btn btn-gold btn-sm" onclick="bondAction('submit', ${b.id})">Submit Proof</button>` : ""}
+              ${b.status === 2 ? `<button class="btn btn-emerald btn-sm" onclick="bondAction('settle', ${b.id})">Approve & Settle</button>` : ""}
+              ${b.status === 1 ? `<button class="btn btn-outline btn-sm" onclick="bondAction('cancel', ${b.id})">Cancel</button>` : ""}
+              ${b.status === 1 && mode === "sandbox" && !expired ? `<button class="btn btn-outline btn-sm" onclick="fastForwardBond(${b.id})">Fast-Forward Expiry</button>` : ""}
+              ${b.status === 1 && expired ? `<button class="btn btn-danger btn-sm" onclick="bondAction('timeout', ${b.id})">Claim Timeout Refund</button>` : ""}
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function fastForwardBond(id) {
+      const b = sandbox.bonds.find(x => x.id === id);
+      if (!b) return;
+      b.deadline = Math.floor(Date.now() / 1000) + sandbox.nowOffsetSec - 10;
+      renderBonds(sandbox.bonds);
+      toast(`Sandbox clock advanced past Bond #${id} deadline.`, "info");
+    }
+
+    async function bondAction(action, bondId) {
+      if (mode === "sandbox") {
+        const b = sandbox.bonds.find(x => x.id === bondId);
+        if (!b) return;
+        if (action === "submit") {
+          b.receiptHash = ethers.keccak256(ethers.toUtf8Bytes(`receipt-proof-bond-${bondId}`));
+          b.receiptURI = `ipfs://qbond-receipt-${bondId}`;
+          b.status = 2;
+          logAudit("Submit Milestone", `Bond #${bondId} receipt ${shortAddr(b.receiptHash)}`);
+        } else if (action === "settle") {
+          b.status = 3;
+          logAudit("Approve & Settle", `Released ${b.amount.toFixed(2)} tUSD8 to Agent #${b.workerAgentId}`);
+        } else if (action === "cancel") {
+          b.status = 5;
+          sandbox.tusd8 += b.amount;
+          logAudit("Cancel Bond", `Reclaimed ${b.amount.toFixed(2)} tUSD8`);
+        } else if (action === "timeout") {
+          b.status = 4;
+          sandbox.tusd8 += b.amount;
+          logAudit("Timeout Refund", `Permissionless refund of ${b.amount.toFixed(2)} tUSD8`);
+        }
+        syncBalances(false);
+        renderBonds(sandbox.bonds);
+        return toast(`Sandbox Bond #${bondId}: ${action} complete.`, "success");
+      }
+
+      try {
+        const escrow = requireLiveContracts();
+        let tx;
+        if (action === "submit") {
+          const rHash = ethers.keccak256(ethers.toUtf8Bytes(`qbond-deliverable-${bondId}-${Date.now()}`));
+          tx = await escrow.submitMilestone(bondId, rHash, `ipfs://qbond-receipt-${bondId}`);
+        } else if (action === "settle") {
+          tx = await escrow.approveAndSettle(bondId);
+        } else if (action === "cancel") {
+          tx = await escrow.cancelBond(bondId);
+        } else if (action === "timeout") {
+          tx = await escrow.claimTimeoutRefund(bondId);
+        }
+        toast(`Sending ${action} transaction...`, "info");
+        await tx.wait();
+        logAudit(`Bond ${action}`, `Bond #${bondId}`, tx.hash);
+        toast(`Bond #${bondId} ${action} confirmed!`, "success");
+        await syncBalances(false);
+        await refreshBonds();
+      } catch (err) {
+        toast(decodeError(err), "error");
+      }
+    }
+
+    // =========================================================================
+    // 6. Scoped Session Keys & 1-Click Revoke
+    // =========================================================================
+    function renderSandboxPolicy() {
+      const p = sandbox.policy;
+      const box = document.getElementById("sessionTelemetry");
+      if (!p) return;
+      const pct = Math.min(100, (p.dailySpent / p.dailyCap) * 100);
+      box.innerHTML = `
+        <div class="alert-box ${p.active ? "alert-success" : "alert-danger"}">
+          <strong>Status: ${p.active ? "ACTIVE" : "REVOKED (KILL SWITCH ENGAGED)"}</strong><br/>
+          Session Key: <span class="mono">${shortAddr(p.sessionKey)}</span><br/>
+          Per-Bond Cap: <span class="mono">${p.maxPerBond.toFixed(2)} tUSD8</span> •
+          24h Spent: <span class="mono">${p.dailySpent.toFixed(2)} / ${p.dailyCap.toFixed(2)} tUSD8</span>
+          <div class="cap-bar-track"><div class="cap-bar-fill" style="width:${pct}%"></div></div>
+        </div>
+      `;
+    }
+
+    async function saveSessionPolicy() {
+      const sessKey = document.getElementById("sessKeyAddr").value.trim() || userAddress || "0xA9e7000000000000000000000000000000005e55";
+      const maxBond = parseFloat(document.getElementById("sessMaxBond").value || "0");
+      const dailyCap = parseFloat(document.getElementById("sessDailyCap").value || "0");
+      const hrs = parseInt(document.getElementById("sessExpiryHrs").value, 10);
+
+      if (maxBond <= 0 || dailyCap < maxBond || !hrs) return toast("Invalid cap parameters (dailyCap >= maxPerBond).", "error");
+
+      if (mode === "sandbox") {
+        sandbox.policy = {
+          sessionKey: sessKey,
+          maxPerBond: maxBond,
+          dailyCap,
+          dailySpent: 0,
+          expiresAt: Math.floor(Date.now() / 1000) + hrs * 3600,
+          active: true
+        };
+        renderSandboxPolicy();
+        logAudit("Set Session Policy", `Cap ${maxBond}/${dailyCap} tUSD8 for ${shortAddr(sessKey)}`);
+        return toast("Sandbox session policy active!", "success");
+      }
+
+      try {
+        const escrow = requireLiveContracts();
+        const expiresAt = BigInt(Math.floor(Date.now() / 1000) + hrs * 3600);
+        const tx = await escrow.setSessionPolicy(
+          sessKey,
+          ethers.parseUnits(maxBond.toFixed(6), 6),
+          ethers.parseUnits(dailyCap.toFixed(6), 6),
+          expiresAt
+        );
+        toast("Authorizing scoped session key on Aevum...", "info");
+        await tx.wait();
+        logAudit("Set Session Policy", `${maxBond}/${dailyCap} tUSD8 for ${shortAddr(sessKey)}`, tx.hash);
+        toast("Session policy saved on-chain!", "success");
+        await inspectSessionPolicy();
+      } catch (err) {
+        toast(decodeError(err), "error");
+      }
+    }
+
+    async function revokeSessionPolicy() {
+      const sessKey = document.getElementById("sessKeyAddr").value.trim() || userAddress;
+      if (mode === "sandbox") {
+        if (sandbox.policy) {
+          sandbox.policy.active = false;
+          renderSandboxPolicy();
+        }
+        logAudit("1-Click Session Revoke", `Emergency kill-switch triggered for ${shortAddr(sessKey)}`);
+        return toast("Emergency Kill Switch: Session Revoked!", "error");
+      }
+
+      try {
+        const escrow = requireLiveContracts();
+        const tx = await escrow.revokeSession(sessKey);
+        await tx.wait();
+        logAudit("1-Click Session Revoke", `Revoked ${shortAddr(sessKey)}`, tx.hash);
+        toast("Session key revoked on-chain!", "success");
+        await inspectSessionPolicy();
+      } catch (err) {
+        toast(decodeError(err), "error");
+      }
+    }
+
+    async function inspectSessionPolicy() {
+      if (mode === "sandbox") return renderSandboxPolicy();
+      try {
+        const escrow = requireLiveContracts();
+        const sessKey = document.getElementById("sessKeyAddr").value.trim() || userAddress;
+        const [p, rem] = await Promise.all([
+          escrow.policies(userAddress, sessKey),
+          escrow.remainingDailyCap(userAddress, sessKey)
+        ]);
+        const maxB = Number(ethers.formatUnits(p.maxPerBond, 6));
+        const daily = Number(ethers.formatUnits(p.dailyCap, 6));
+        const spent = Number(ethers.formatUnits(p.dailySpent, 6));
+        const remNum = Number(ethers.formatUnits(rem, 6));
+        const pct = daily > 0 ? Math.min(100, (spent / daily) * 100) : 0;
+        document.getElementById("sessionTelemetry").innerHTML = `
+          <div class="alert-box ${p.active ? "alert-success" : "alert-danger"}">
+            <strong>Status: ${p.active ? "ACTIVE" : "INACTIVE / REVOKED"}</strong><br/>
+            Per-Bond Cap: <span class="mono">${maxB.toFixed(2)} tUSD8</span> •
+            Remaining 24h: <span class="mono">${remNum.toFixed(2)} / ${daily.toFixed(2)} tUSD8</span>
+            <div class="cap-bar-track"><div class="cap-bar-fill" style="width:${pct}%"></div></div>
+          </div>
+        `;
+      } catch (err) {
+        toast(decodeError(err), "error");
+      }
+    }
+
+    // =========================================================================
+    // 7. ERC-8004 Registry & Prompt-Injection Guardrails
+    // =========================================================================
+    async function registerAgent() {
+      const uri = document.getElementById("agentUriInput").value.trim();
+      if (!uri) return toast("Enter an agent URI.", "error");
+
+      if (mode === "sandbox") {
+        const id = sandbox.nextAgentId++;
+        sandbox.agents[id] = { owner: userAddress || "0x5aNd...b0x1", uri };
+        document.getElementById("registerAgentResult").innerHTML =
+          `<div class="alert-box alert-success">Minted ERC-8004 Worker Agent <strong>#${id}</strong> (${uri})</div>`;
+        logAudit("Register ERC-8004 Agent", `Minted Agent #${id}`);
+        return toast(`Registered Agent #${id}`, "success");
+      }
+
+      try {
+        if (!config.registry || !ethers.isAddress(config.registry)) {
+          throw new Error("Open 'Contracts' and paste your IdentityRegistry address first.");
+        }
+        const reg = new ethers.Contract(config.registry, REGISTRY_ABI, signer);
+        const tx = await reg.register(uri);
+        toast("Minting ERC-8004 agent identity...", "info");
+        await tx.wait();
+        const nextId = Number(await reg.nextAgentId()) - 1;
+        document.getElementById("registerAgentResult").innerHTML =
+          `<div class="alert-box alert-success">Minted ERC-8004 Agent <strong>#${nextId}</strong> on Aevum 44005!</div>`;
+        logAudit("Register ERC-8004 Agent", `Agent #${nextId} (${uri})`, tx.hash);
+        toast(`ERC-8004 Agent #${nextId} minted!`, "success");
+      } catch (err) {
+        toast(decodeError(err), "error");
+      }
+    }
+
+    async function lookupAgent() {
+      const id = parseInt(document.getElementById("lookupAgentId").value, 10);
+      const out = document.getElementById("agentLookupResult");
+      if (mode === "sandbox") {
+        const a = sandbox.agents[id];
+        out.innerHTML = a
+          ? `<div class="alert-box alert-success"><strong>Agent #${id}</strong><br/>Owner: <span class="mono">${a.owner}</span><br/>URI: <span class="mono">${a.uri}</span></div>`
+          : `<div class="alert-box alert-danger">Agent #${id} not found (InvalidWorkerAgent).</div>`;
+        return;
+      }
+      try {
+        if (!config.registry || !ethers.isAddress(config.registry)) {
+          throw new Error("Configure IdentityRegistry address in Contracts first.");
+        }
+        const rpc = new ethers.JsonRpcProvider(AEVUM.rpcUrl);
+        const reg = new ethers.Contract(config.registry, REGISTRY_ABI, rpc);
+        const [owner, uri] = await Promise.all([reg.ownerOf(id), reg.tokenURI(id)]);
+        out.innerHTML = `<div class="alert-box alert-success"><strong>Agent #${id}</strong><br/>Owner: <span class="mono">${owner}</span><br/>URI: <span class="mono">${uri}</span></div>`;
+      } catch (err) {
+        out.innerHTML = `<div class="alert-box alert-danger">${decodeError(err)}</div>`;
+      }
+    }
+
+    async function runAttackSim(kind) {
+      const out = document.getElementById("securitySimOutput");
+      const messages = {
+        perBond: {
+          code: "ExceedsPerBondCap(500000000, 25000000)",
+          desc: "Prompt-injected agent attempted to drain 500.00 tUSD8 in a single bond. QBondEscrow reverted atomically before moving any tokens."
+        },
+        dailyCap: {
+          code: "ExceedsDailyCap(125000000, 100000000)",
+          desc: "Runaway agent loop attempted rapid micro-bonds totaling 125.00 tUSD8 inside a 24h rolling window. Blocked by on-chain daily budget."
+        },
+        revoked: {
+          code: "SessionNotActive()",
+          desc: "Compromised session key attempted settlement after principal pressed 1-Click Emergency Revoke. Instant zero-latency lockout enforced."
+        }
+      };
+
+      const item = messages[kind];
+      out.innerHTML = `
+        <div class="alert-box alert-danger">
+          <strong>[ON-CHAIN REVERT ENFORCED] <span class="mono">${item.code}</span></strong><br/>
+          ${item.desc}
+        </div>
+      `;
+      logAudit("Guardrail Blocked Attack", `${item.code}`);
+      toast(`Guardrail held: ${item.code}`, "success");
+    }
+
+    // =========================================================================
+    // 8. Boot & Real-Time Polling Lifecycle
+    // =========================================================================
+    updateTaskHashPreview();
+    updateWalletUI();
+
+    pollTimer = setInterval(() => {
+      if (mode === "live" && userAddress && document.visibilityState === "visible") {
+        syncBalances(false);
+      }
+    }, 5000);
+
+    window.addEventListener("focus", () => { if (mode === "live" && userAddress) syncBalances(false); });
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "visible" && mode === "live" && userAddress) syncBalances(false);
+    });
+  </script>
+</body>
+</html>

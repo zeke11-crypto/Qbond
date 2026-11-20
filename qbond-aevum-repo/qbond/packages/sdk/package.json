@@ -1,0 +1,28 @@
+{
+  "name": "@qbond/sdk",
+  "version": "1.0.0",
+  "description": "Reusable TypeScript SDK for QBond ERC-8004 milestone escrows and scoped agent sessions on QDay Aevum (Chain ID 44005).",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [
+    "qday",
+    "aevum",
+    "tusd8",
+    "erc-8004",
+    "escrow",
+    "ai-agents",
+    "viem"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "viem": "^2.21.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.3"
+  }
+}
